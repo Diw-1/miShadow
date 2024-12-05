@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Para Mi Shadow</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom, #8B0000, #000000); /* Rojo oscuro a negro */
+      font-family: 'Comic Sans MS', cursive;
+      text-align: center;
+      color: #ff69b4;
+    }
+    .login {
+      margin-top: 10%;
+    }
+    input[type="password"] {
+      padding: 12px;
+      border: 2px solid #ff69b4;
+      border-radius: 15px;
+      background-color: #ffe4e1;
+      font-size: 18px;
+      color: #ff69b4;
+      transition: all 0.3s ease;
+    }
+    input[type="password"]:focus {
+      background-color: #ff69b4;
+      color: white;
+      border-color: #fff;
+    }
+    #gallery {
+      display: none;
+    }
+    img, video {
+      width: 80%;
+      margin-top: 20px;
+      border: 5px solid #ff69b4;
+      border-radius: 15px;
+    }
+    video {
+      width: 60%;
+    }
+    @media (max-width: 768px) {
+      video {
+        width: 50%;
+      }
+    }
+    .gif {
+      width: 150px;
+      margin-bottom: 20px;
+    }
+    button {
+      cursor: pointer;
+    }
+    /* Estilo del juego */
+    #game-container {
+      width: 100%;
+      height: 500px; /* Aumenta la altura para asegurarte de que se vea el fondo */
+      background-color: #ff69b4; /* Fondo temporal para depuración */
+      background-image: url('a0701121c2bde85bc5bd95ee8843abb7.gif'); /* Cambia el nombre de tu archivo aquí */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      position: relative;
+      margin-top: 30px;
+      border-radius: 15px;
+      overflow: hidden;
+      display: none; /* Asegúrate de que el juego esté oculto al principio */
+    }
+    .character {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-image: url('ca59c7300ea299fc9f429da8e7924e5c.gif');
+      background-size: cover;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .enemy {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-image: url('fab689ba87a510fc6b483b6a68d8bb93.gif');
+      top: 50px;
+      left: 90%;
+      animation: moveEnemy 3s linear infinite;
+    }
+    .attack {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-color: red;
+      display: none;
+    }
+    @keyframes moveEnemy {
+      0% {
+        left: 100%;
+      }
+      100% {
+        left: -50px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login" id="login">
+    <img src="f10dccfc82f6f3aa7388b2177729bee7.gif" alt="GIF animado" class="gif">
+    <h1>Ingresa la contraseña</h1>
+    <input type="password" id="password" placeholder="Contraseña">
+    <!-- Asegúrate de poner la URL correcta de la imagen -->
+    <img src="4cdba2a7fecfd5649711327d036b933b.gif" id="entrar" style="cursor: pointer; width: 200px; margin-top: 20px;">
+  </div>
+
+  <div id="gallery">
+    <div id="media-container"></div>
+    <h2 id="message">Muak</h2>
+    <button onclick="nextMedia()">Siguiente</button>
+  </div>
+
+  <div id="game-container">
+    <div class="character" id="character"></div>
+    <div class="enemy" id="enemy"></div>
+  </div>
+
+  <h2 id="game-message"></h2>
+
+  <!-- Agregar el audio aquí -->
+  <audio id="game-audio" src="Shadow the Hedgehog -【 I Am... All of Me 】- Crush 40 [ Sub. Español ].mp3" loop></audio>
+
+  <script>
+    const password = "miShadow";
+    const media = [
+      { type: "video", src: "VID_20690222_000206_801.mp4" },
+      { type: "video", src: "VID_20241124_130550_026.mp4" },
+      { type: "video", src: "video_20240714_004356.mp4" },
+      { type: "video", src: "VID_637470123_182056_121.mp4" },
+    ];
+    let currentMedia = 0;
+    let character = document.getElementById("character");
+    let enemy = document.getElementById("enemy");
+    let attack = document.getElementById("attack");
+    let gameMessage = document.getElementById("game-message");
+    let isGameOver = false;
+    let audio = document.getElementById("game-audio");
+
+    // Movimiento del personaje
+    document.addEventListener("keydown", (e) => {
+      if (isGameOver) return;
+
+      let left = parseInt(window.getComputedStyle(character).left);
+      if (e.key === "ArrowLeft" && left > 0) {
+        character.style.left = left - 10 + "px";
+      } else if (e.key === "ArrowRight" && left < 290) {
+        character.style.left = left + 10 + "px";
+      }
+    });
+
+    function checkPassword() {
+      const input = document.getElementById("password").value;
+      if (input === password) {
+        document.getElementById("login").style.display = "none";
+        document.getElementById("gallery").style.display = "block";
+        showMedia();
+      } else {
+        alert("Contraseña incorrecta");
+      }
+    }
+
+    function showMedia() {
+      const container = document.getElementById("media-container");
+      const current = media[currentMedia];
+      container.innerHTML = current.type === "video" ? 
+        `<video src="${current.src}" autoplay></video>` :
+        `<img src="${current.src}">`;
+      document.getElementById("message").innerText = 
+        currentMedia === 1 ? "Te quiero mucho mi Shadow" : "Muak";
+    }
+
+    function nextMedia() {
+      currentMedia++;
+      if (currentMedia >= media.length) {
+        document.getElementById("gallery").style.display = "none";
+        document.getElementById("game-container").style.display = "block";
+        audio.play(); // Reproducir el audio cuando se inicie el juego
+      } else {
+        showMedia();
+      }
+    }
+
+    document.getElementById("entrar").addEventListener("click", checkPassword);
+  </script>
+</body>
+</html>
