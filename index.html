@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,7 +34,7 @@
     img, video {
       width: 80%;
       margin-top: 20px;
-      border: 5px solid #ff69b4;
+      border: 5px solid #330101;
       border-radius: 15px;
     }
     video {
@@ -52,12 +52,11 @@
     button {
       cursor: pointer;
     }
-    /* Estilo del juego */
     #game-container {
       width: 100%;
-      height: 500px; /* Aumenta la altura para asegurarte de que se vea el fondo */
-      background-color: #ff69b4; /* Fondo temporal para depuración */
-      background-image: url('a0701121c2bde85bc5bd95ee8843abb7.gif'); /* Cambia el nombre de tu archivo aquí */
+      height: 500px;
+      background-color: #2e0c1d;
+      background-image: url('a0701121c2bde85bc5bd95ee8843abb7.gif');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -65,7 +64,7 @@
       margin-top: 30px;
       border-radius: 15px;
       overflow: hidden;
-      display: none; /* Asegúrate de que el juego esté oculto al principio */
+      display: none;
     }
     .character {
       position: absolute;
@@ -82,9 +81,9 @@
       width: 50px;
       height: 50px;
       background-image: url('fab689ba87a510fc6b483b6a68d8bb93.gif');
-      top: 50px;
+      top: 0;
       left: 90%;
-      animation: moveEnemy 3s linear infinite;
+      animation: fall 3s linear infinite;
     }
     .attack {
       position: absolute;
@@ -93,12 +92,17 @@
       background-color: red;
       display: none;
     }
-    @keyframes moveEnemy {
+    @keyframes fall {
       0% {
-        left: 100%;
+        top: 0;
       }
       100% {
-        left: -50px;
+        top: 100%;
+      }
+    }
+    @media (max-width: 768px) {
+      .game-container {
+        height: 400px;
       }
     }
   </style>
@@ -108,29 +112,33 @@
     <img src="f10dccfc82f6f3aa7388b2177729bee7.gif" alt="GIF animado" class="gif">
     <h1>Ingresa la contraseña</h1>
     <input type="password" id="password" placeholder="Contraseña">
-    <!-- Asegúrate de poner la URL correcta de la imagen -->
     <img src="4cdba2a7fecfd5649711327d036b933b.gif" id="entrar" style="cursor: pointer; width: 200px; margin-top: 20px;">
   </div>
 
-  <div id="gallery">
+  <div id="gallery" style="display: none;">
     <div id="media-container"></div>
     <h2 id="message">Muak</h2>
-    <button onclick="nextMedia()">Siguiente</button>
+    
+    <button id="back" onclick="goBack()">Anterior</button>
+    <button id="next" onclick="nextMedia()">Siguiente</button>
   </div>
-
+  
   <div id="game-container">
     <div class="character" id="character"></div>
     <div class="enemy" id="enemy"></div>
+    <div class="attack" id="attack"></div>
   </div>
 
   <h2 id="game-message"></h2>
 
-  <!-- Agregar el audio aquí -->
   <audio id="game-audio" src="Shadow the Hedgehog -【 I Am... All of Me 】- Crush 40 [ Sub. Español ].mp3" loop></audio>
 
   <script>
     const password = "miShadow";
     const media = [
+      { type: "video", src: "VID_20241206_164327_466.mp4" },
+      { type: "video", src: "VID_20241206_160954_319.mp4" },
+      { type: "video", src: "video_20241206_210821_edit.mp4" },
       { type: "video", src: "VID_20690222_000206_801.mp4" },
       { type: "video", src: "VID_20241124_130550_026.mp4" },
       { type: "video", src: "video_20240714_004356.mp4" },
@@ -144,6 +152,10 @@
     let isGameOver = false;
     let audio = document.getElementById("game-audio");
 
+    let isJumping = false;
+    let jumpHeight = 0;
+    let gravity = 1;
+
     // Movimiento del personaje
     document.addEventListener("keydown", (e) => {
       if (isGameOver) return;
@@ -154,7 +166,34 @@
       } else if (e.key === "ArrowRight" && left < 290) {
         character.style.left = left + 10 + "px";
       }
+      if (e.key === "ArrowUp" && !isJumping) {
+        isJumping = true;
+        jumpHeight = 0;
+        jump();
+      }
     });
+
+    // Función de salto
+    function jump() {
+      if (jumpHeight < 100) {
+        jumpHeight += 10;
+        character.style.bottom = jumpHeight + "px";
+        setTimeout(jump, 20); // Continuar el salto hasta llegar al punto máximo
+      } else {
+        fall();
+      }
+    }
+
+    // Función de caída (gravedad)
+    function fall() {
+      if (jumpHeight > 0) {
+        jumpHeight -= gravity;
+        character.style.bottom = jumpHeight + "px";
+        setTimeout(fall, 20); // Continuar la caída
+      } else {
+        isJumping = false;
+      }
+    }
 
     function checkPassword() {
       const input = document.getElementById("password").value;
@@ -164,17 +203,21 @@
         showMedia();
       } else {
         alert("Contraseña incorrecta");
+        document.getElementById("password").style.borderColor = "red";
+        setTimeout(() => {
+          document.getElementById("password").style.borderColor = "#ff69b4";
+        }, 1000);
       }
     }
 
     function showMedia() {
       const container = document.getElementById("media-container");
       const current = media[currentMedia];
-      container.innerHTML = current.type === "video" ? 
-        `<video src="${current.src}" autoplay></video>` :
-        `<img src="${current.src}">`;
+      container.innerHTML = current.type === "video" 
+        ? `<video src="${current.src}" autoplay controls></video>` 
+        : `<img src="${current.src}">`;
       document.getElementById("message").innerText = 
-        currentMedia === 1 ? "Te quiero mucho mi Shadow" : "Muak";
+        currentMedia === media.length - 1 ? "Te quiero mucho mi Shadow" : "Muak";
     }
 
     function nextMedia() {
@@ -184,6 +227,13 @@
         document.getElementById("game-container").style.display = "block";
         audio.play(); // Reproducir el audio cuando se inicie el juego
       } else {
+        showMedia();
+      }
+    }
+
+    function goBack() {
+      if (currentMedia > 0) {
+        currentMedia--;
         showMedia();
       }
     }
